@@ -1,0 +1,178 @@
+//tree.h
+#pragma once
+#ifndef TREE_H
+#define TREE_H
+
+// 노드 구조체 정의
+typedef struct _Node {
+	int value; // 노드에 저장될 값
+	struct _Node* left; // 왼쪽 자식 노드를 가리키는 포인터
+	struct _Node* right; // 오른쪽 자식 노드를 가리키는 포인터
+} Node;
+
+// 노드 생성 함수 선언
+Node* createNode(int value);
+
+// 트리 생성 함수 선언
+Node* makeTree();
+
+// 전체 노드 값 출력 함수 선언 (재귀함수)
+void printNode(Node* root);
+
+// 특정 값을 찾는 노드의 포인터 반환하는 함수 선언
+Node* findNode(Node* root, int value);
+
+// 노드를 트리에 삽입하는 함수들 선언
+Node* insertLeftNode(Node* where, Node* new_node);
+Node* insertRightNode(Node* where, Node* new_node);
+
+#endif
+
+//tree.c
+#include "tree.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+// 노드 생성 함수
+Node* createNode(int value) {
+    Node* new_node = (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        fprintf(stderr, "Out of memory\n");
+        exit(1);
+    }
+    new_node->value = value;
+    new_node->left = NULL;
+    new_node->right = NULL;
+    return new_node;
+}
+
+// 트리 생성 함수
+Node* makeTree() {
+    Node* root = createNode(100);
+    root->left = createNode(200);
+    root->right = createNode(300);
+    root->right->left = createNode(400);
+    root->right->right = createNode(500);
+    return root;
+}
+
+// 모든 노드 값을 사전 순서로 인쇄하는 재귀 함수
+void printNode(Node* root) {
+    if (root != NULL) {
+        printf("%d ", root->value);
+        printNode(root->left);
+        printNode(root->right);
+    }
+}
+
+// 특정 값을 가진 노드를 찾는 기능
+Node* findNode(Node* root, int value) {
+    if (root == NULL) {
+        return NULL;
+    }
+    if (root->value == value) {
+        return root;
+    }
+    Node* left_node = findNode(root->left, value);
+    if (left_node != NULL) {
+        return left_node;
+    }
+    Node* right_node = findNode(root->right, value);
+    if (right_node != NULL) {
+        return right_node;
+    }
+    return NULL;
+}
+
+// 새 노드를 지정된 노드의 왼쪽 자식으로 삽입하는 기능
+Node* insertLeftNode(Node* where, Node* new_node) {
+    if (where == NULL) {
+        return NULL;
+    }
+    new_node->left = where->left;
+    where->left = new_node;
+    return where;
+}
+
+// 새 노드를 지정된 노드의 오른쪽 자식으로 삽입하는 기능
+Node* insertRightNode(Node* where, Node* new_node) {
+    if (where == NULL) {
+        return NULL;
+    }
+    new_node->right = where->right;
+    where->right = new_node;
+    return where;
+}
+
+// test.c
+#include "tree.h"
+#include <assert.h>
+
+void test_makeTree() {
+	Node* root = makeTree();
+	assert(root->value == 100);
+	assert(root->left->value == 200);
+	assert(root->right->value == 300);
+	assert(root->right->left->value == 400);
+	assert(root->right->right->value == 500);
+}
+
+void test_findNode() {
+	Node* root = makeTree();
+	Node* found_node = findNode(root, 400);
+	assert(found_node->value == 400);
+}
+
+void test_insertLeftNode() {
+	Node* root = makeTree();
+	Node* found_node = findNode(root, 300);
+	Node* new_node = createNode(600);
+	Node* where = insertLeftNode(found_node, new_node);
+	assert(where->left->value == 600);
+}
+
+void test_insertRightNode() {
+	Node* root = makeTree();
+	Node* found_node = findNode(root, 300);
+	Node* new_node = createNode(700);
+	Node* where = insertRightNode(found_node, new_node);
+	assert(where->right->value == 700);
+}
+
+void testTreeFunctions() {
+	test_makeTree(); // makeTree() 함수를 테스트합니다.
+	test_findNode(); // findNode() 함수를 테스트합니다.
+	test_insertLeftNode(); // insertLeftNode() 함수를 테스트합니다.
+	test_insertRightNode(); // insertRightNode() 함수를 테스트합니다.
+	return 0;
+}
+
+// main.c
+#include "tree.h"
+#include <stdio.h>
+
+// 이진 트리 함수 테스트
+int main() {
+    // 이진 트리 만들기
+    Node* root = makeTree();
+
+    // 트리를 사전 순서에 따라 출력합니다
+    printf("Preorder traversal: ");
+    printNode(root);
+    printf("\n");
+
+    // 특정 값을 가진 노드 찾기
+    Node* found_node = findNode(root, 400);
+    printf("Found node with value %d\n", found_node->value);
+
+    // 찾은 노드의 오른쪽에 새 노드 삽입
+    Node* new_node = createNode(600);
+    insertRightNode(found_node, new_node);
+    printf("Preorder traversal after inserting new node: ");
+    printNode(root);
+    printf("\n");
+
+    printf("Hello World!\n");
+
+    return 0;
+}
